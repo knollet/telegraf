@@ -429,6 +429,19 @@ func (m *WinPerfCounters) Gather(acc telegraf.Accumulator) error {
 		m.lastRefreshed = time.Now()
 		// minimum time between collecting two samples
 		time.Sleep(time.Second)
+
+		// DEBUG #14097
+		for _, hostCounterSet := range m.hostCounters {
+			m.Log.Debugf("REFRESHED = Length of hostCounterSet: %#v", len(hostCounterSet.counters))
+			for i, c := range hostCounterSet.counters {
+				m.Log.Debugf("Found counter no %#v : %#v", i, c.counter)
+				m.Log.Debugf(" + counterPath %#v", c.counterPath)
+				m.Log.Debugf(" + instance %#v", c.instance)
+				m.Log.Debugf(" + objectName %#v", c.objectName)
+			}
+		}
+		// !DEBUG
+
 	}
 
 	for _, hostCounterSet := range m.hostCounters {
