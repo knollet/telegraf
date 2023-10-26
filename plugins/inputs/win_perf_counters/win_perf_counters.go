@@ -196,6 +196,12 @@ func (m *WinPerfCounters) AddItem(counterPath, computer, objectName, instance, c
 	var err error
 	var counterHandle pdhCounterHandle
 
+	// DEBUG - 14097
+	if m.PrintValid {
+		m.Log.Infof("## DEBUG ## AddItem entered")
+	}
+	// !DEBUG
+
 	sourceTag := computer
 	if computer == "localhost" {
 		sourceTag = m.hostname()
@@ -214,6 +220,13 @@ func (m *WinPerfCounters) AddItem(counterPath, computer, objectName, instance, c
 		hostCounter.counters = make([]*counter, 0)
 	}
 
+	// DEBUG - 14097
+	if m.PrintValid {
+		m.Log.Infof("## DEBUG ## PerfomanceQuery open")
+	}
+	// !DEBUG
+
+
 	if !hostCounter.query.IsVistaOrNewer() {
 		counterHandle, err = hostCounter.query.AddCounterToQuery(counterPath)
 		if err != nil {
@@ -226,27 +239,63 @@ func (m *WinPerfCounters) AddItem(counterPath, computer, objectName, instance, c
 		}
 	}
 
+	// DEBUG - 14097
+	if m.PrintValid {
+		m.Log.Infof("## DEBUG ## Counter added to Query")
+	}
+	// !DEBUG
+
+
 	if m.UseWildcardsExpansion {
 		origInstance := instance
 		counterPath, err = hostCounter.query.GetCounterPath(counterHandle)
 		if err != nil {
 			return err
 		}
+
+		// DEBUG - 14097
+		if m.PrintValid {
+			m.Log.Infof("## DEBUG ## CounterPath gotten")
+		}
+		// !DEBUG
+
+		
 		counters, err := hostCounter.query.ExpandWildCardPath(counterPath)
 		if err != nil {
 			return err
 		}
 
+		// DEBUG - 14097
+		if m.PrintValid {
+			m.Log.Infof("## DEBUG ## expanded WildCardPath")
+		}
+		// !DEBUG
+
+		
 		_, origObjectName, _, origCounterName, err := extractCounterInfoFromCounterPath(origCounterPath)
 		if err != nil {
 			return err
 		}
 
+		// DEBUG - 14097
+		if m.PrintValid {
+			m.Log.Infof("## DEBUG ## extracted CounterInfoFromCounterPath")
+		}
+		// !DEBUG
+
+
 		for _, counterPath := range counters {
-			_, err := hostCounter.query.AddCounterToQuery(counterPath)
+			_, err := hostCounter.query.AddCounterToQuery(counterPath)			
 			if err != nil {
 				return err
 			}
+
+			// DEBUG - 14097
+			if m.PrintValid {
+				m.Log.Infof("## DEBUG ## Added counter to Query: %#v", counterPath)
+			}
+			// !DEBUG
+
 
 			computer, objectName, instance, counterName, err = extractCounterInfoFromCounterPath(counterPath)
 			if err != nil {
@@ -376,6 +425,12 @@ func (m *WinPerfCounters) ParseConfig() error {
 					objectName := PerfObject.ObjectName
 					counterPath = formatPath(computer, objectName, instance, counter)
 
+					// DEBUG - 14097
+					if m.PrintValid {
+						m.Log.Infof("## DEBUG ## AddItem about to be entered")
+					}
+					// !DEBUG
+
 					err := m.AddItem(counterPath, computer, objectName, instance, counter,
 						PerfObject.Measurement, PerfObject.IncludeTotal, PerfObject.UseRawValues)
 					if err != nil {
@@ -433,15 +488,14 @@ func (m *WinPerfCounters) Gather(acc telegraf.Accumulator) error {
 		// DEBUG #14097
 		for _, hostCounterSet := range m.hostCounters {
 			m.Log.Debugf("REFRESHED = Length of hostCounterSet: %#v", len(hostCounterSet.counters))
-			for i, c := range hostCounterSet.counters {
-				m.Log.Debugf("Found counter no %#v : %#v", i, c.counter)
-				m.Log.Debugf(" + counterPath %#v", c.counterPath)
-				m.Log.Debugf(" + instance %#v", c.instance)
-				m.Log.Debugf(" + objectName %#v", c.objectName)
-			}
+			// for i, c := range hostCounterSet.counters {
+			// 	m.Log.Debugf("Found counter no %#v : %#v", i, c.counter)
+			// 	m.Log.Debugf(" + counterPath %#v", c.counterPath)
+			// 	m.Log.Debugf(" + instance %#v", c.instance)
+			// 	m.Log.Debugf(" + objectName %#v", c.objectName)
+			//}
 		}
 		// !DEBUG
-
 	}
 
 	for _, hostCounterSet := range m.hostCounters {
