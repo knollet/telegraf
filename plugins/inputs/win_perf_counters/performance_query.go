@@ -144,7 +144,8 @@ func (m *PerformanceQueryImpl) ExpandWildCardPath(counterPath string) ([]string,
 	var buff []uint16
 	var ret uint32
 
-	if ret = PdhExpandWildCardPath(counterPath, nil, &bufSize); ret == PdhMoreData {
+	ret = PdhExpandWildCardPath(counterPath, nil, &bufSize)
+	for tries := 5 ; ret == PdhMoreData && tries > 0 ; tries-- {
 		buff = make([]uint16, bufSize)
 		bufSize = uint32(len(buff))
 		ret = PdhExpandWildCardPath(counterPath, &buff[0], &bufSize)
